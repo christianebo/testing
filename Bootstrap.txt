@@ -1,0 +1,1377 @@
+<!-- Bootstrap CDN -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+/////data base/////
+
+clinic
+
+CREATE DATABASE clinic_db;
+
+USE clinic_db;
+
+CREATE TABLE clinics (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
+    contact VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+_________________________________________________________________________________________________
+/////db.php/////
+
+<?php
+$conn = new mysqli("localhost", "root", "", "clinic_db");
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
+
+
+_________________________________________________________________________________________________
+/////index.php/////
+
+
+<?php include 'db.php'; ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clinic List</title>
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold">Clinic List</h2>
+        <a href="create.php" class="btn btn-primary">Add Clinic</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <table class="table table-bordered table-striped text-center">
+                <thead class="table-primary">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Contact</th>
+                        <th style="width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php
+                    $result = $conn->query("SELECT * FROM clinics");
+                    while($row = $result->fetch_assoc()):
+                    ?>
+                    <tr>
+                        <td><?= $row['id'] ?></td>
+                        <td><?= $row['name'] ?></td>
+                        <td><?= $row['address'] ?></td>
+                        <td><?= $row['contact'] ?></td>
+                        <td>
+                            <a href="edit.php?id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="delete.php?id=<?= $row['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this clinic?')">Delete</a>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
+
+
+_________________________________________________________________________________________________
+/////edit.php/////
+
+
+ <?php include 'db.php';
+
+$id = $_GET['id'];
+$clinic = $conn->query("SELECT * FROM clinics WHERE id=$id")->fetch_assoc();
+
+if(isset($_POST['submit'])){
+    $name = $_POST['name'];
+    $address = $_POST['address'];
+    $contact = $_POST['contact'];
+
+    $sql = "UPDATE clinics SET name='$name', address='$address', contact='$contact' WHERE id=$id";
+    $conn->query($sql);
+
+    header("Location: index.php");
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Clinic</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body class="bg-light">
+
+<div class="container mt-4" style="max-width: 500px;">
+
+    <h3 class="mb-3">Edit Clinic</h3>
+
+    <form method="POST">
+
+        <div class="mb-2">
+            <label class="form-label">Clinic Name</label>
+            <input type="text" name="name" class="form-control form-control-sm" value="<?= $clinic['name'] ?>"required>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label">Address</label>
+            <textarea name="address" class="form-control form-control-sm" rows="2" required><?= $clinic['address'] ?></textarea>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label">Contact Number</label>
+            <input type="text" name="contact" class="form-control form-control-sm" value="<?= $clinic['contact'] ?>">
+        </div>
+
+        <button type="submit" name="submit" class="btn btn-primary btn-sm">Update</button>
+        <a href="index.php" class="btn btn-secondary btn-sm">Back</a>
+
+    </form>
+
+</div>
+
+</body>
+</html>
+
+
+_________________________________________________________________________________________________
+
+/////delete.php/////
+
+
+<?php
+include 'db.php';
+$id = $_GET['id'];
+$conn->query("DELETE FROM clinics WHERE id=$id");
+header("Location: index.php");
+exit();
+
+_________________________________________________________________________________________________
+/////create.php/////
+
+<?php include 'db.php';
+
+if(isset($_POST['submit'])){
+    $name = $_POST['name'];
+    $address = $_POST['address'];
+    $contact = $_POST['contact'];
+
+    $sql = "INSERT INTO clinics (name, address, contact) VALUES ('$name', '$address', '$contact')";
+    $conn->query($sql);
+
+    header("Location: index.php");
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Clinic</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body class="bg-light">
+
+<div class="container mt-4" style="max-width: 500px;">
+
+    <h3 class="mb-3">Add Clinic</h3>
+
+    <form method="POST">
+
+        <div class="mb-2">
+            <label class="form-label">Clinic Name</label>
+            <input type="text" name="name" class="form-control form-control-sm" required>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label">Address</label>
+            <textarea name="address" class="form-control form-control-sm" rows="2" required></textarea>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label">Contact Number</label>
+            <input type="text" name="contact" class="form-control form-control-sm">
+        </div>
+
+        <button type="submit" name="submit" class="btn btn-primary btn-sm">Save</button>
+        <a href="index.php" class="btn btn-secondary btn-sm">Back</a>
+
+    </form>
+
+</div>
+
+</body>
+</html>
+
+_________________________________________________________________________________________________________________________
+
+Registration
+
+
+/////data base/////
+
+CREATE DATABASE registration_db;
+
+USE registration_db;
+
+CREATE TABLE registration (
+    idNum VARCHAR(20) PRIMARY KEY,
+    campus VARCHAR(50),
+    studFName VARCHAR(50),
+    studLName VARCHAR(50),
+    amountPaid INT,
+    attended VARCHAR(5)
+);
+
+_________________________________________________________________________________________________
+/////attendance.php/////
+
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Attendance</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+
+<h3>Record Attendance</h3>
+<a href="index.php">Back to Menu</a><br><br>
+
+<form method="POST">
+    <input name="idNum" class="form-control mb-2" placeholder="Enter ID Number">
+    <button name="submit" class="btn btn-primary w-100">Submit</button>
+</form>
+
+<?php
+if (isset($_POST['submit'])) {
+    $id = $_POST['idNum'];
+    $chk = $conn->query("SELECT * FROM registration WHERE idNum='$id'");
+
+    if ($chk->num_rows == 0) {
+        echo "<div class='alert alert-danger mt-3'>ID IS NOT YET REGISTERED.</div>";
+    } else {
+        $row = $chk->fetch_assoc();
+        if ($row['attended'] == "Yes") {
+            echo "<div class='alert alert-warning mt-3'>Attendance ALREADY RECORDED.</div>";
+        } else {
+            $conn->query("UPDATE registration SET attended='Yes' WHERE idNum='$id'");
+            echo "<div class='alert alert-success mt-3'>Attendance RECORDED.</div>";
+        }
+    }
+}
+?>
+
+</body>
+</html>
+
+_______________________________________________________________________________________________________
+/////db.php/////
+
+
+<?php
+$conn = new mysqli("localhost", "root", "", "registration_db");
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
+
+_______________________________________________________________________________________________________
+
+
+/////index.php/////
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UC ICT Congress System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-5">
+
+<h2>Select Transaction</h2>
+<a href="register.php" class="btn btn-primary w-100 mt-2">Registration</a>
+<a href="attendance.php" class="btn btn-primary w-100 mt-2">Attendance</a>
+<a href="raffle.php" class="btn btn-primary w-100 mt-2">Raffle</a>
+<a href="report_campus.php" class="btn btn-primary w-100 mt-2">Report (By Campus)</a>
+<a href="summary.php" class="btn btn-primary w-100 mt-2">Summary Report</a>
+
+</body>
+</html>
+
+_______________________________________________________________________________________________________
+
+
+
+/////raffle.php/////
+
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Raffle</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body class="p-4">
+
+<h3>Raffle Draw</h3>
+<a href="index.php">Back to Menu</a><br><br>
+
+<form method="POST">
+    <select name="campus" class="form-control mb-2">
+        <option>Main</option>
+        <option>Banilad</option>
+        <option>LM</option>
+        <option>PT</option>
+    </select>
+    <button name="draw" class="btn btn-success w-100">Reveal Lucky Winner</button>
+</form>
+
+<?php
+if (isset($_POST['draw'])) {
+    $campus = $_POST['campus'];
+    $res = $conn->query("SELECT * FROM registration WHERE campus='$campus' ORDER BY RAND() LIMIT 1");
+
+    if ($res->num_rows == 0) {
+        echo "<div class='alert alert-warning mt-3'>No registrants in this campus.</div>";
+    } else {
+        $w = $res->fetch_assoc();
+        echo "<div class='alert alert-info mt-4 p-3'>
+            <h4>Winner:</h4>
+            <b>ID:</b> $w[idNum] <br>
+            <b>Name:</b> $w[studFName] $w[studLName] <br>
+            <b>Campus:</b> $w[campus]
+        </div>";
+    }
+}
+?>
+
+</body>
+</html>
+
+_______________________________________________________________________________________________________
+
+
+/////register.php/////
+
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Registration</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+
+<h3>Register a Student</h3>
+<a href="index.php">Back to Menu</a><br><br>
+
+<form method="POST">
+    <input name="idNum" class="form-control mb-2" placeholder="ID Number" required>
+    <input name="studFName" class="form-control mb-2" placeholder="First Name" required>
+    <input name="studLName" class="form-control mb-2" placeholder="Last Name" required>
+
+    <select name="campus" class="form-control mb-2" required>
+        <option>Main</option>
+        <option>Banilad</option>
+        <option>LM</option>
+        <option>PT</option>
+    </select>
+
+    <input name="amountPaid" class="form-control mb-2" placeholder="Amount Paid" required>
+    <button name="save" class="btn btn-success w-100">Save</button>
+</form>
+
+<?php
+if (isset($_POST['save'])) {
+    $id = $_POST['idNum'];
+    $chk = $conn->query("SELECT * FROM registration WHERE idNum='$id'");
+
+    if ($chk->num_rows > 0) {
+        echo "<div class='alert alert-danger mt-3'>ID ALREADY REGISTERED</div>";
+    } else {
+        $conn->query("INSERT INTO registration VALUES('$id','$_POST[campus]','$_POST[studFName]','$_POST[studLName]',$_POST[amountPaid],'No')");
+        echo "<div class='alert alert-success mt-3'>REGISTERED SUCCESSFULLY</div>";
+    }
+}
+
+$result = $conn->query("SELECT * FROM registration");
+?>
+
+<table class="table table-bordered mt-3">
+<tr>
+    <th>ID</th><th>Name</th><th>Campus</th><th>Amount</th>
+</tr>
+
+<?php while ($row = $result->fetch_assoc()) { ?>
+<tr>
+    <td><?= $row['idNum'] ?></td>
+    <td><?= $row['studFName'] . " " . $row['studLName'] ?></td>
+    <td><?= $row['campus'] ?></td>
+    <td><?= $row['amountPaid'] ?></td>
+</tr>
+<?php } ?>
+
+</table>
+
+</body>
+</html>
+
+_______________________________________________________________________________________________________
+
+
+/////report_campus.php/////
+
+
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Report By Campus</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+
+<h3>Report By Campus</h3>
+<a href="index.php">Back to Menu</a><br><br>
+
+<form method="POST">
+    <select name="campus" class="form-control mb-2">
+        <option>Main</option>
+        <option>Banilad</option>
+        <option>LM</option>
+        <option>PT</option>
+    </select>
+    <button name="gen" class="btn btn-primary w-100">Generate Report</button>
+</form>
+
+<?php
+if (isset($_POST['gen'])) {
+    $campus = $_POST['campus'];
+    $data = $conn->query("SELECT * FROM registration WHERE campus='$campus'");
+?>
+
+<h4 class="mt-4">Campus: <?= $campus ?></h4>
+
+<table class="table table-bordered mt-3">
+<tr>
+    <th>ID</th><th>Name</th><th>Amount</th><th>Attended</th>
+</tr>
+
+<?php while ($row = $data->fetch_assoc()) { ?>
+<tr>
+    <td><?= $row['idNum'] ?></td>
+    <td><?= $row['studFName'] . " " . $row['studLName'] ?></td>
+    <td><?= $row['amountPaid'] ?></td>
+    <td><?= $row['attended'] ?></td>
+</tr>
+<?php } ?>
+
+</table>
+
+<?php } ?>
+
+</body>
+</html>
+
+
+_______________________________________________________________________________________________________
+
+/////summary.php/////
+
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Summary</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+
+<h3>Summary Report</h3>
+<a href="index.php">Back to Menu</a><br><br>
+
+<?php
+$campuses = ["Main","Banilad","LM","PT"];
+?>
+
+<table class="table table-bordered mt-3">
+<tr>
+    <th>Campus</th><th>Registered</th><th>Attended</th><th>Total Amount</th>
+</tr>
+
+<?php
+$totalReg = 0;
+$totalAtt = 0;
+$totalAmt = 0;
+
+foreach ($campuses as $c) {
+    $reg = $conn->query("SELECT * FROM registration WHERE campus='$c'")->num_rows;
+    $att = $conn->query("SELECT * FROM registration WHERE campus='$c' AND attended='Yes'")->num_rows;
+    $amtRow = $conn->query("SELECT SUM(amountPaid) AS total FROM registration WHERE campus='$c'")->fetch_assoc();
+    $amt = $amtRow['total'] ?? 0;
+
+    $totalReg += $reg;
+    $totalAtt += $att;
+    $totalAmt += $amt;
+
+    echo "
+    <tr>
+        <td>$c</td>
+        <td>$reg</td>
+        <td>$att</td>
+        <td>$amt</td>
+    </tr>";
+}
+?>
+
+<tr>
+    <th>TOTAL</th>
+    <th><?= $totalReg ?></th>
+    <th><?= $totalAtt ?></th>
+    <th><?= $totalAmt ?></th>
+</tr>
+</table>
+
+</body>
+</html>
+
+
+_______________________________________________________________________________________________________
+
+
+Inventory
+
+/////data base/////
+CREATE DATABASE inventory_db;
+
+USE inventory_db;
+
+CREATE TABLE inventory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    item_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    category VARCHAR(100),
+    sku VARCHAR(100),
+    supplier VARCHAR(255),
+    date_added DATE
+);
+
+_______________________________________________________________________________________________________
+
+/////create.php/////
+
+<?php 
+include 'db.php';
+
+if(isset($_POST['submit'])){
+    $name = $_POST['item_name'];
+    $desc = $_POST['description'];
+    $qty = $_POST['quantity'];
+    $price = $_POST['price'];
+    $cat = $_POST['category'];
+    $sku = $_POST['sku'];
+    $sup = $_POST['supplier'];
+    $date = $_POST['date_added'];
+
+    $sql = "INSERT INTO inventory (item_name, description, quantity, price, category, sku, supplier, date_added)
+            VALUES ('$name', '$desc', $qty, $price, '$cat', '$sku', '$sup', '$date')";
+    $conn->query($sql);
+
+    header("Location: index.php");
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Item</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-4" style="max-width: 500px;">
+
+    <h3>Add Item</h3>
+
+    <form method="POST">
+
+        <div class="mb-2">
+            <label>Item Name</label>
+            <input type="text" name="item_name" class="form-control form-control-sm" required>
+        </div>
+
+        <div class="mb-2">
+            <label>Description</label>
+            <textarea name="description" class="form-control form-control-sm"></textarea>
+        </div>
+
+        <div class="mb-2">
+            <label>Quantity</label>
+            <input type="number" name="quantity" class="form-control form-control-sm" required>
+        </div>
+
+        <div class="mb-2">
+            <label>Price</label>
+            <input type="number" step="0.01" name="price" class="form-control form-control-sm" required>
+        </div>
+
+        <div class="mb-2">
+            <label>Category</label>
+            <input type="text" name="category" class="form-control form-control-sm">
+        </div>
+
+        <div class="mb-2">
+            <label>SKU</label>
+            <input type="text" name="sku" class="form-control form-control-sm">
+        </div>
+
+        <div class="mb-2">
+            <label>Supplier</label>
+            <input type="text" name="supplier" class="form-control form-control-sm">
+        </div>
+
+        <div class="mb-2">
+            <label>Date Added</label>
+            <input type="date" name="date_added" class="form-control form-control-sm">
+        </div>
+
+        <button type="submit" name="submit" class="btn btn-primary btn-sm">Save</button>
+        <a href="index.php" class="btn btn-secondary btn-sm">Back</a>
+
+    </form>
+
+</div>
+
+</body>
+</html>
+
+
+_______________________________________________________________________________________________________
+
+/////db.php/////
+<?php
+$conn = new mysqli("localhost", "root", "", "inventory");
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
+
+
+_______________________________________________________________________________________________________
+
+/////delete.php/////
+
+<?php
+include 'db.php';
+
+$id = $_GET['id'];
+$conn->query("DELETE FROM inventory WHERE id=$id");
+
+header("Location: index.php");
+exit();
+?>
+
+_______________________________________________________________________________________________________
+
+/////edit.php/////
+
+<?php include 'db.php';
+
+$id = $_GET['id'];
+$item = $conn->query("SELECT * FROM inventory WHERE id=$id")->fetch_assoc();
+
+if(isset($_POST['submit'])){
+    $item_name = $_POST['item_name'];
+    $description = $_POST['description'];
+    $quantity = $_POST['quantity'];
+    $price = $_POST['price'];
+    $category = $_POST['category'];
+    $sku = $_POST['sku'];
+    $supplier = $_POST['supplier'];
+
+    $sql = "UPDATE inventory SET 
+        item_name='$item_name', 
+        description='$description',
+        quantity='$quantity',
+        price='$price',
+        category='$category',
+        sku='$sku',
+        supplier='$supplier'
+        WHERE id=$id";
+
+    $conn->query($sql);
+    header("Location: index.php");
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Edit Item</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+form { width: 350px; }
+input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; }
+button {
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+a { text-decoration: none; color: #333; }
+</style>
+</head>
+<body>
+
+<h2>Edit Inventory Item</h2>
+
+<form method="POST">
+    <input type="text" name="item_name" value="<?= $item['item_name'] ?>" required>
+    <textarea name="description" required><?= $item['description'] ?></textarea>
+    <input type="number" name="quantity" value="<?= $item['quantity'] ?>" required>
+    <input type="number" step="0.01" name="price" value="<?= $item['price'] ?>" required>
+    <input type="text" name="category" value="<?= $item['category'] ?>">
+    <input type="text" name="sku" value="<?= $item['sku'] ?>">
+    <input type="text" name="supplier" value="<?= $item['supplier'] ?>">
+
+    <button type="submit" name="submit">Update</button>
+</form>
+
+<br>
+<a href="index.php">Back</a>
+
+</body>
+</html>
+
+
+_______________________________________________________________________________________________________
+
+/////index.php/////
+
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-4">
+
+    <h3>Inventory Items</h3>
+    <a href="create.php" class="btn btn-primary btn-sm mb-3">Add Item</a>
+
+    <table class="table table-bordered table-striped">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>SKU</th>
+            <th>Supplier</th>
+            <th>Date Added</th>
+            <th>Actions</th>
+        </tr>
+
+        <?php
+        $result = $conn->query("SELECT * FROM inventory");
+        while($row = $result->fetch_assoc()):
+        ?>
+        <tr>
+            <td><?= $row['id'] ?></td>
+            <td><?= $row['item_name'] ?></td>
+            <td><?= $row['quantity'] ?></td>
+            <td><?= $row['price'] ?></td>
+            <td><?= $row['category'] ?></td>
+            <td><?= $row['sku'] ?></td>
+            <td><?= $row['supplier'] ?></td>
+            <td><?= $row['date_added'] ?></td>
+            <td>
+                <a href="edit.php?id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                <a href="delete.php?id=<?= $row['id'] ?>" class="btn btn-danger btn-sm"
+                   onclick="return confirm('Delete this item?')">Delete</a>
+            </td>
+        </tr>
+        <?php endwhile; ?>
+    </table>
+
+</div>
+
+</body>
+</html>
+
+_______________________________________________________________________________________________________
+
+
+MY SHOP
+/////data base/////
+
+CREATE DATABASE myshop;
+
+CREATE TABLE clients (
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(200) NOT NULL UNIQUE,
+    phone VARCHAR(20) NULL,
+    address VARCHAR(200) NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+_______________________________________________________________________________________________________
+
+/////create.php/////
+<?php
+ $servername = "localhost";
+$username = "root";
+$password = "";
+$database = "myshop";
+
+// Create connection
+$connection = new mysqli($servername, $username, $password, $database);
+
+
+ $name = "";
+ $email = "";
+ $phone = "";
+ $address = "";
+
+ $errorMessage = "";
+ $successMessage = "";
+
+
+ if( $_SERVER['REQUEST_METHOD'] == 'POST'){
+    $name = $_POST["name"];
+    $email = $_POST["email"];
+    $phone = $_POST["phone"];
+    $address = $_POST["address"];
+
+    do {
+        if( empty($name) || empty($email) || empty($phone) || empty($address) ){
+            $errorMessage = "All the fields are required";
+            break;
+            }
+
+          // Check if email exists
+            $checkEmail = "SELECT email FROM clients WHERE email = '$email'";
+            $resultEmail = $connection->query($checkEmail);
+
+            if ($resultEmail->num_rows > 0) {
+            $errorMessage = "Email already exists.";
+            break;
+}
+
+// Insert client
+$sql = "INSERT INTO clients (name, email, phone, address) VALUES ('$name', '$email', '$phone', '$address')";
+$result = $connection->query($sql);
+
+if (!$result) {
+    $errorMessage = "Invalid query: " . $connection->error;
+    break;
+}
+
+
+            $name = "";
+            $email = "";
+            $phone = "";
+            $address = "";
+
+            $successMessage = "Client added correctly";
+
+            header("location: /myshop/index.php");
+            exit;
+
+        
+    } while(false);
+ }
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container my-5">
+        <h2>New Client</h2>
+
+        <?php 
+        if ( !empty($errorMessage)){
+            echo"
+            <div class='alert alert-warning alert-dismissible fade show' role='alert'>
+                <strong>$errorMessage</strong>
+                <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                </div>
+            ";
+        }
+        ?>
+
+        <form method="post">
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Name</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="name" value="<?php echo $name; ?>">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Email</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="email" value="<?php echo $email; ?>">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Phone</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="phone" value="<?php echo $phone; ?>">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Address</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="address" value="<?php echo $address; ?>">
+                </div>
+            </div>
+
+            <?php 
+            if ( !empty($successMessage)){
+               echo "
+               <div class='row mb-3'>
+                    <div class ='offset-sm-3 col-sm-6'>
+                        <div class='alert alert-success alert-dismissible fade show' role='alert'>
+                            <strong>$successMessage</strong>
+                            <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                        </div>
+                    </div>
+                </div>
+            ";
+            }
+            ?>
+            <div class="row mb-3">
+                <div class="offset-sm-3 col-sm-3 d-grid">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                <div class="col-sm-3 d-grid">
+                    <a class="btn btn-outline-primary" href="/myshop/index.php" role="button">Cancel</a>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+_______________________________________________________________________________________________________
+
+/////delete.php/////
+    <?php
+    if( isset($_GET["id"]) ){
+        $id = $_GET["id"];
+
+        $servername = "localhost";
+        $username = "root";
+        $password = "";
+        $database = "myshop";
+
+        //create connection
+        $connection = new mysqli($servername, $username, $password, $database);
+
+        $sql = "DELETE FROM clients WHERE id=$id";
+        $connection->query($sql);
+
+    }
+
+    header("location: /myshop/index.php");
+    exit;
+    ?>
+
+_______________________________________________________________________________________________________
+
+/////edit.php/////
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$database = "myshop";
+
+// Create connection
+$connection = new mysqli($servername, $username, $password, $database);
+
+ $id = "";
+ $name = "";
+ $email = "";
+ $phone = "";
+ $address = "";
+
+
+ $errorMessage = "";
+ $successMessage = "";
+
+ if ($_SERVER['REQUEST_METHOD'] == 'GET'){
+    // GET method: show data of the client
+    if( !isset($_GET["id"]) ){
+        header("location: /myshop/index.php");
+        exit;
+    }
+
+    $id = $_GET["id"];
+
+    //read the row of the selected client from database table
+    $sql = "SELECT * FROM clients WHERE id=$id";
+    $result = $connection->query($sql);
+    $row = $result->fetch_assoc();
+
+    if (!$row){
+        header("location: /myshop/index.php");
+        exit;
+    }
+
+    $name = $row["name"];
+    $email = $row["email"];
+    $phone = $row["phone"];
+    $address = $row["address"];
+
+ }
+ else{
+    // POST method: Update the data of the client
+
+    $id = $_POST["id"];
+    $name = $_POST["name"];
+    $email = $_POST["email"];
+    $phone = $_POST["phone"];
+    $address = $_POST["address"];
+
+     do {
+        if (empty($id) || empty($name) || empty($email) || empty($phone) || empty($address) ){
+            $errorMessage = "All the feilds are required";
+            break;
+        }
+
+        $sql = "UPDATE clients " . 
+                "SET name = '$name', email = '$email', phone = '$phone', address = '$address' " . 
+                "WHERE id = $id";
+
+        $result = $connection->query($sql);
+        
+        if(!$result){
+            $errorMessage = "Invalid query: " . $connection->error;
+            break;
+        }
+
+        $successMessage = "Client updated correctly";
+
+        header("location: /myshop/index.php");
+        exit;
+
+
+    } while(false);
+
+ }
+?>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container my-5">
+        <h2>New Client</h2>
+
+        <?php 
+        if ( !empty($errorMessage)){
+            echo"
+            <div class='alert alert-warning alert-dismissible fade show' role='alert'>
+                <strong>$errorMessage</strong>
+                <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                </div>
+            ";
+        }
+        ?>
+
+        <form method="post">
+            <input type="hidden" name="id" value="<?php echo $id; ?>">
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Name</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="name" value="<?php echo $name; ?>">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Email</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="email" value="<?php echo $email; ?>">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Phone</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="phone" value="<?php echo $phone; ?>">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Address</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="address" value="<?php echo $address; ?>">
+                </div>
+            </div>
+
+            <?php 
+            if ( !empty($successMessage)){
+               echo"
+               <div class='row mb-3'>
+                    <div class ='offset-sm-3 col-sm-6'>
+                        <div class='alert alert-success alert-dismissible fade show' role='alert'>
+                            <strong>$successMessage</strong>
+                            <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+                        </div>
+                    </div>
+                </div>
+            ";
+            }
+            ?>
+            <div class="row mb-3">
+                <div class="offset-sm-3 col-sm-3 d-grid">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                <div class="col-sm-3 d-grid">
+                    <a class="btn btn-outline-primary" href="/myshop/index.php" role="button">Cancel</a>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
+_______________________________________________________________________________________________________
+
+/////index.php/////
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Shop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div>
+    <div class="container my-5"> 
+        <h2>List of Clients</h2>
+                </div?>
+<div class="row">
+    <div class="card-body">
+        <div class="col-md-4">  
+            <form action="index.php" method="GET">
+                <!-- Search bar -->
+                <div class="mb-3">
+                    <input type="text" name="search" 
+                           value="<?php if(isset($_GET['search'])){echo $_GET['search'];} ?>"  
+                           class="form-control" placeholder="Search User">
+                </div>
+
+                <!-- Buttons below -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    <a href="index.php" class="btn btn-secondary">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+            <div class="com-md-12">
+                <div class="card mt-4">
+                    <div class="cardbody">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                   <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                    $con = mysqli_connect("localhost","root","","myshop");
+
+                                    if(isset($_GET['search']))
+                                    {
+                                        $filtervalues = $_GET['search'];
+                                        $query = "SELECT * FROM clients WHERE CONCAT(name, email, phone, address) LIKE '%$filtervalues%' ";
+                                        $query_run = mysqli_query($con, $query);
+                                        $sql = "SELECT *, (quantity * price) AS total FROM clients";
+
+                                        if(mysqli_num_rows($query_run) > 0)
+                                        {
+                                            foreach($query_run as $items)
+                                            {
+                                                ?>
+                                                    <tr>
+                                                        <td><?= $items['id'] ?></td>
+                                                        <td><?= $items['name'] ?></td>
+                                                        <td><?= $items['email'] ?></td>
+                                                        <td><?= $items['phone'] ?></td>
+                                                        <td><?= $items['address'] ?></td>
+                                                        <td><?= $items['quantity'] ?></td>
+                                                        <td><?= $items['price'] ?></td>
+                                                        <td><?= $items['quantity'] * $items['price'] ?></td>
+                                                    </tr>
+                                                <?php
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ?>
+                                            <table class="table">
+                                <tr>
+                                    <td colspan="4">No Record Found</td>
+                                </tr>
+                                </table>
+                                            <?php 
+                                        }
+                                    }
+                                ?>
+                         
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        <br>
+        <a class="btn btn-primary" href= "/myshop/create.php" role="button">New Client</a>
+        <br>
+        <table class="table">
+            <thead>
+                <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total Amount</th>
+                <th>Create At</th>
+                <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $servername = "localhost";
+                $username = "root";
+                $password = "";
+                $database = "myshop";
+
+                // Create connection
+                $connection = new mysqli($servername, $username, $password, $database);
+
+                // Check connection
+                if ($connection->connect_error){
+                    die("Connection Failed: " . $connection->connect_error);
+                }
+
+                // read all row from database table
+                $sql = "SELECT * FROM clients";
+                $result = $connection->query($sql);
+
+                if(!$result){
+                    die("Invalid Query: . $connection->error");
+                }
+
+                // read data of each row
+                while($row = $result->fetch_assoc()){
+                    $total = $row['quantity'] * $row['price'];
+                    echo "
+                    <tr>
+                    <td>$row[id]</td>
+                    <td>$row[name]</td>
+                    <td>$row[email]</td>
+                    <td>$row[phone]</td>
+                    <td>$row[address]</td>
+                    <td>$row[quantity]</td>
+                    <td>$row[price]</td>
+                    <td>$total</td>
+                    <td>$row[created_at]</td>
+                    <td>
+                        <a class='btn btn-primary bts-sm' href='/myshop/edit.php?id=$row[id]'>Edit</a>
+                        <a class='btn btn-danger bts-sm' href='/myshop/delete.php?id=$row[id]'>Delete</a>
+                    </td>
+                </tr>
+                    ";
+                }
+                ?>
+
+                
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+
+
+-----
+
+ALTER TABLE clients
+ADD id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+ADD name VARCHAR(100) NOT NULL,
+ADD email VARCHAR(200) NOT NULL UNIQUE,
+ADD phone VARCHAR(20) NULL,
+ADD address VARCHAR(200) NULL,
+ADD quantity INT NOT NULL,
+ADD price DECIMAL(10,2) NOT NULL,
+ADD total DECIMAL(10,2) NOT NULL,
+ADD created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
